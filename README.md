@@ -10,8 +10,17 @@ mlupd
 windows 10, 11(64bit)
 
 【ライセンス】
-本ソフトウェアはMITライセンスに準拠する。
-著作者または著作権者は、ソフトウェアまたはソフトウェアの使用に関して一切の責任を負わない。﻿
+*mlupd
+私的利用、商用利用を問わず、配布は自由です。
+著作者または著作権者は、ソフトウェアまたはソフトウェアの使用に関して一切の責任を負わないこととします。﻿
+
+*curl
+本ソフトウェアは、curl（https://curl.se）を利用しています。
+curlはDaniel Stenberg氏によって開発され、MITライセンスのもと提供されています。
+
+*nlohmann-json
+本ソフトウェアは、nlohmann-jsonを利用しています。
+https://github.com/nlohmann/json/blob/develop/LICENSE.MIT
 
 【使用方法】
 * mlupd 導入
