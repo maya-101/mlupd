@@ -44,7 +44,7 @@ public:
 
     HINSTANCE m_hInst;
 
-    std::string responseOption  = std::string("mlupd.config.json");
+    std::string configfileOption  = std::string("mlupd.config.json");
     bool helpFlag               = false;
     bool checkOnlyFlag          = false;
     bool downloadOnlyFlag       = false;

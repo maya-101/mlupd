@@ -208,7 +208,7 @@ std::string Mlupd::GetConfigFilePath()
     char path[MAX_PATH] = { NULL };
     strcat_s(path, drive);
     strcat_s(path, dir);
-    strcat_s(path, responseOption.c_str());
+    strcat_s(path, configfileOption.c_str());
 
     return std::string(path);
 }
@@ -286,7 +286,7 @@ MLERR Mlupd::Main(int argc, std::vector<std::string> argv)
     CURLcode curlErr = CURLE_OK;
 
     // 各オプション。
-    responseOption = GetOptionValue(argv, "--response=", responseOption.c_str());
+    configfileOption = GetOptionValue(argv, "--configfile=", configfileOption.c_str());
     bool helpFlag = HasFlag(argv, "--help");
     bool checkOnlyFlag = HasFlag(argv, "--check-only");
     bool downloadOnlyFlag = HasFlag(argv, "--download-only");
@@ -294,7 +294,7 @@ MLERR Mlupd::Main(int argc, std::vector<std::string> argv)
 
     if (helpFlag) {
         // コマンドライン書式表示。
-        std::cout << "Usage: updater.exe [--response=mlupd.config.json] [--check-only] [--download-only]\n";
+        std::cout << "Usage: updater.exe [--configfile=mlupd.config.json] [--check-only] [--download-only]\n";
         return MLUPD_OK;
     }
 
@@ -329,10 +329,10 @@ MLERR Mlupd::Main(int argc, std::vector<std::string> argv)
     // サーバーからレスポンスファイルをダウンロード。
     std::string serverPath = configLocal["target_url"].get<std::string>();
     std::string tempPath = GetTempFolderPath() + "mlupd\\";
-    std::string localPath = tempPath + responseOption;   // サブディレクトリが作成できないのでアウト。
+    std::string localPath = tempPath + configfileOption;   // サブディレクトリが作成できないのでアウト。
 
     DownloadDialog dlDlg(this);
-    dlDlg.Init(serverPath + responseOption, localPath);
+    dlDlg.Init(serverPath + configfileOption, localPath);
     err = dlDlg.DoModal();
     if (err != MLUPD_OK) {
         std::cerr << "ダウンロードできなかった。\n";

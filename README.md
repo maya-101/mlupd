@@ -47,7 +47,7 @@ https://github.com/nlohmann/json/blob/develop/LICENSE.MIT
 
 【コマンドライン仕様】
 mlupd.exe [--configfile=コンフィグファイル名] [--check-only] [--download-only] [--config] [--help]
---configfile= コンフィグファイル名を指定する。省略時は、mlupd.response.jsonという名前のファイルを検索する。コンフィグファイルはmlupd.exeと同じディレクトリに置くこと。
+--configfile= コンフィグファイル名を指定する。省略時は、mlupd.config.jsonという名前のファイルを検索する。コンフィグファイルはmlupd.exeと同じディレクトリに置くこと。
 --pwd= サーバーパスワードを指定する。
 --check-only サーバーにアクセスして、新しいバージョンのアップデータがあるかチェックする。ダウンロードはしない
 --download-only サーバーからアップデート対象のファイルをダウンロードする。インストールは実行しない。
