@@ -316,14 +316,14 @@ MLERR Mlupd::Main(int argc, std::vector<std::string> argv)
     // アプリ側のレスポンスファイルがあるか。
     std::string configFileName = GetConfigFilePath();
     if (!PathFileExistsA(configFileName.c_str())) {
-        return MLUPD_ERR + ERR_RESPONSE_FILE_COULD_NOT_BE_FOUND;
+        return MLUPD_ERR + ERR_CONFIG_FILE_COULD_NOT_BE_FOUND;
     }
 
     // アプリ側のレスポンスファイルのロード。
     json configLocal;
     if (!LoadJson(GetConfigFilePath(), configLocal)) {
         std::cerr << "設定ファイル読み込み失敗\n";
-        return MLUPD_ERR + ERR_COULD_NOT_OPEN_RESPONSE_FILE;
+        return MLUPD_ERR + ERR_COULD_NOT_OPEN_CONFIG_FILE;
     }
 
     // サーバーからレスポンスファイルをダウンロード。
@@ -343,7 +343,7 @@ MLERR Mlupd::Main(int argc, std::vector<std::string> argv)
     json configSvr;
     if (!LoadJson(localPath, configSvr)) {
         std::cerr << "設定ファイル読み込み失敗\n";
-        return MLUPD_ERR + ERR_COULD_NOT_OPEN_RESPONSE_FILE;
+        return MLUPD_ERR + ERR_COULD_NOT_OPEN_CONFIG_FILE;
     }
 
     // サーバー側のバージョンと、アプリ側のバージョンを比較。
