@@ -25,6 +25,7 @@ https://github.com/nlohmann/json/blob/develop/LICENSE.MIT
 【使用方法】
 * mlupd 導入
   1. github から mlupd.exe とその他ファイル（libcurl.dll、curl-ca-bundle.crt) をダウンロードする。
+  https://github.com/maya-101/mlupd/releases/latest
 
 * mlupdの事前設定
   1. 配布アプリケーションと同じパスに mlupd.exe とその他ファイルを配置する。
