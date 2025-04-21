@@ -57,7 +57,7 @@ target_filename  : アップデーターのファイル名(パスは含めない
 target_url       : アップデータのダウンロードURL(ファイル名は含めない)
 target_version   : アップデータのバージョン
 install_command  : 実行するインストーラー名（xxxxxx.exeなど）。パスは含めない。
-install_option   : 実行するインストーラーにわたす引数。/sirentなど
+install_option   : 実行するインストーラーにわたす引数。/quietなど
 force_update     : バージョンの如何にかかわらず、アップデートを強制する。
 show_progress    : ダウンロード進捗を表示する
 expected_sha256  : ハッシュ値(コンフィグが自動計算)あるいは無し。※2
