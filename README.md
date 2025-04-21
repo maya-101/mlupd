@@ -38,7 +38,7 @@ windows 10, 11(64bit)
 
 【コマンドライン仕様】
 mlupd.exe [--configfile=コンフィグファイル名] [--check-only] [--download-only] [--config] [--help]
---response= コンフィグファイル名を指定する。省略時は、mlupd.response.jsonという名前のファイルを検索する。コンフィグファイルはmlupd.exeと同じディレクトリに置くこと。
+--configfile= コンフィグファイル名を指定する。省略時は、mlupd.response.jsonという名前のファイルを検索する。コンフィグファイルはmlupd.exeと同じディレクトリに置くこと。
 --pwd= サーバーパスワードを指定する。
 --check-only サーバーにアクセスして、新しいバージョンのアップデータがあるかチェックする。ダウンロードはしない
 --download-only サーバーからアップデート対象のファイルをダウンロードする。インストールは実行しない。
@@ -48,9 +48,9 @@ mlupd.exe [--configfile=コンフィグファイル名] [--check-only] [--downlo
 【戻り値】
 0 配布アプリケーションは最新である。または正常にダウンロードできた。
 1 --check-only指定時に、新しいバージョンが見つかった場合。
-0x1001 レスポンスファイルが見つからなかった。
-0x1002 レスポンスファイルを開けなかった。
-0x1003 レスポンスファイルのダウンロードに失敗した。
+0x1001 コンフィグファイルが見つからなかった。
+0x1002 コンフィグファイルを開けなかった。
+0x1003 コンフィグファイルのダウンロードに失敗した。
 0x1004 ファイルを出力できなかった。
 0x2nnn CURLエラー。nnnの部分がCURLのエラーコードとなる。 https://curl.se/libcurl/c/libcurl-errors.html を参照。
 
@@ -59,12 +59,12 @@ target_filename  : アップデーターのファイル名(パスは含めない
 target_url       : アップデータのダウンロードURL(ファイル名は含めない)
 target_version   : アップデータのバージョン
 install_command  : 実行するインストーラー名（xxxxxx.exeなど）。パスは含めない。
-install_option   : 実行するインストーラーにわたす引数。/sirentなど
+install_option   : 実行するインストーラーにわたす引数。/quietなど
 force_update     : バージョンの如何にかかわらず、アップデートを強制する。
 show_progress    : ダウンロード進捗を表示する
 expected_sha256  : ハッシュ値(コンフィグが自動計算)あるいは無し。※2
 
-レスポンスファイルの例
+コンフィグファイルの例
 {
   "target_filename"   : "MyAppInstaller.exe",
   "target_url"        : "https://example.com/MyAppInstaller.exe",
