@@ -415,16 +415,16 @@ MLERR Mlupd::Main(int argc, std::vector<std::string> argv)
     std::string localVersion = configLocal["target_version"].get<std::string>();
 
     // 前回スキップしたバージョン(あれば)を取得。
-    std::string key = REGKEY_SKIP_VERSIONS;
-    std::string value = mlupd::pathmap::HashPath(GetConfigFilePath());
-    localVersion = RegGetString(HKEY_CURRENT_USER, key.c_str(), value.c_str(), localVersion.c_str());
+    if (!noVersionSkip) {
+        std::string key = REGKEY_SKIP_VERSIONS;
+        std::string value = mlupd::pathmap::HashPath(GetConfigFilePath());
+        localVersion = RegGetString(HKEY_CURRENT_USER, key.c_str(), value.c_str(), localVersion.c_str());
+    }
 
     forceUpdate |= configLocal["force_update"].get<bool>();
     if (!forceUpdate && !VersionIsNewer(svrVersion, localVersion)) {
         std::cout << "バージョンは最新です。\n";
-        if (!noVersionSkip) {
-            return S_OK; // 変化なし
-        }
+        return S_OK; // 変化なし
     }
 
     if (!forceUpdate && inquiryUpdate) {
