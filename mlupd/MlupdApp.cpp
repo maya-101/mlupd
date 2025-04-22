@@ -408,7 +408,7 @@ MLERR Mlupd::Main(int argc, std::vector<std::string> argv)
     std::cout << "インストーラーを実行します...\n";
     std::string installCommand = configSvr["install_command"].get<std::string>();
     std::string installOption = configSvr["install_option"].get<std::string>();
-    ShellExecuteA(NULL, "open", installCommand.c_str(), installOption.c_str()/, tempPath.c_str(), SW_SHOWNORMAL);
+    ShellExecuteA(NULL, "open", installCommand.c_str(), installOption.c_str(), tempPath.c_str(), SW_SHOWNORMAL);
 
     curl_global_cleanup();
 
