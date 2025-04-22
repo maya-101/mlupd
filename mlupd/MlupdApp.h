@@ -7,10 +7,11 @@
 #define MLUPD_NEW_VERSION_FOUND_ON_SERVER           1
 
 #define MLUPD_ERR                                   0x1000  // MLUPD_ERR + 下記エラーコードを返す。
-#define ERR_CONFIG_FILE_COULD_NOT_BE_FOUND        1       // レスポンスファイルが見つからなかった。
-#define ERR_COULD_NOT_OPEN_CONFIG_FILE            2       // レスポンスファイルを開けなかった。  
-#define ERR_FAILED_TO_DOWNLOAD_CONFIG_FILE        3       // レスポンスファイルのダウンロードに失敗した。
-#define ERR_COULD_NOT_OUTPUT_FILE                   4       // ファイルを出力できなかった。
+#define ERR_CONFIG_FILE_COULD_NOT_BE_FOUND        1       // コンフィグファイルが見つからなかった。
+#define ERR_COULD_NOT_OPEN_CONFIG_FILE            2       // コンフィグファイルを開けなかった。  
+#define ERR_FAILED_TO_DOWNLOAD_CONFIG_FILE        3       // コンフィグファイルのダウンロードに失敗した。
+#define ERR_COULD_NOT_OUTPUT_FILE                 4       // ファイルを出力できなかった。
+#define ERR_DOWNLOAD_INTERRUPTED_BY_USER          5       // ダウンロードがユーザーによって中断された。
 
 // CURL固有のエラーコード。
 #define MLUPD_ERR_CURLE                             0x2000  // MLUPD_ERR_CURLE + CURLcode

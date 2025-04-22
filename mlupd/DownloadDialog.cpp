@@ -33,18 +33,16 @@ MLERR DownloadDialog::Download()
 {
     CURLcode curlErr = CURLE_OK;
 
-    if (!m_mlupd->CreateFullDirectory(m_param.dstPath.c_str())) {
-        return MLUPD_ERR + ERR_COULD_NOT_OUTPUT_FILE;
-    }
-
     m_param.outFile.open(m_param.dstPath.c_str(), std::ios::binary);
     if (!m_param.outFile) {
-        return MLUPD_ERR + ERR_COULD_NOT_OUTPUT_FILE;
+        m_param.err = MLUPD_ERR + ERR_COULD_NOT_OUTPUT_FILE;
+        return m_param.err;
     }
 
     m_param.curl = curl_easy_init();
     if (!m_param.curl) {
-        return MLUPD_ERR_CURLE + CURLE_FAILED_INIT;
+        m_param.err = MLUPD_ERR_CURLE + CURLE_FAILED_INIT;
+        return m_param.err;
     }
 
     do {
@@ -81,6 +79,10 @@ MLERR DownloadDialog::Download()
 #endif
 
         curlErr = curl_easy_perform(m_param.curl);
+        if (curlErr == CURLE_ABORTED_BY_CALLBACK) {
+            m_param.err = MLUPD_ERR + ERR_DOWNLOAD_INTERRUPTED_BY_USER;
+            curlErr = CURLE_OK;    // curlÇÃÉGÉâÅ[ÇÕÇ»Ç©Ç¡ÇΩÇ±Ç∆Ç…ÅB
+        }
         BREAK_CURLERR(curlErr);
 
     } while (0);

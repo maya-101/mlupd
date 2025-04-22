@@ -313,23 +313,27 @@ MLERR Mlupd::Main(int argc, std::vector<std::string> argv)
         return MLUPD_ERR_CURLE + curlErr;
     }
 
-    // アプリ側のレスポンスファイルがあるか。
+    // アプリ側のコンフィグファイルがあるか。
     std::string configFileName = GetConfigFilePath();
     if (!PathFileExistsA(configFileName.c_str())) {
         return MLUPD_ERR + ERR_CONFIG_FILE_COULD_NOT_BE_FOUND;
     }
 
-    // アプリ側のレスポンスファイルのロード。
+    // アプリ側のコンフィグファイルのロード。
     json configLocal;
     if (!LoadJson(GetConfigFilePath(), configLocal)) {
         std::cerr << "設定ファイル読み込み失敗\n";
         return MLUPD_ERR + ERR_COULD_NOT_OPEN_CONFIG_FILE;
     }
 
-    // サーバーからレスポンスファイルをダウンロード。
+    // サーバーからコンフィグファイルをダウンロード。
     std::string serverPath = configLocal["target_url"].get<std::string>();
     std::string tempPath = GetTempFolderPath() + "mlupd\\";
     std::string localPath = tempPath + configfileOption;   // サブディレクトリが作成できないのでアウト。
+
+    if (!CreateFullDirectory(tempPath)) {
+        //return MLUPD_ERR + ERR_COULD_NOT_OUTPUT_FILE;
+    }
 
     DownloadDialog dlDlg(this);
     dlDlg.Init(serverPath + configfileOption, localPath);
@@ -339,7 +343,7 @@ MLERR Mlupd::Main(int argc, std::vector<std::string> argv)
         return err;
     }
 
-    // サーバーのレスポンスファイルをロード。
+    // サーバーのコンフィグファイルをロード。
     json configSvr;
     if (!LoadJson(localPath, configSvr)) {
         std::cerr << "設定ファイル読み込み失敗\n";
@@ -384,6 +388,11 @@ MLERR Mlupd::Main(int argc, std::vector<std::string> argv)
     // ダウンロード開始。
     std::string targetUrl = configSvr["target_url"].get<std::string>();
     std::string targetFilename = configSvr["target_filename"].get<std::string>();
+
+    if (!CreateFullDirectory(targetUrl)) {
+        //return MLUPD_ERR + ERR_COULD_NOT_OUTPUT_FILE;
+    }
+
     dlDlg.Init(targetUrl + targetFilename, tempPath + targetFilename);
     err = dlDlg.DoModal();
     if (err != MLUPD_OK) {
@@ -399,7 +408,7 @@ MLERR Mlupd::Main(int argc, std::vector<std::string> argv)
     std::cout << "インストーラーを実行します...\n";
     std::string installCommand = configSvr["install_command"].get<std::string>();
     std::string installOption = configSvr["install_option"].get<std::string>();
-    ShellExecuteA(NULL, "open", installCommand.c_str(), installOption.c_str(), NULL, SW_SHOWNORMAL);
+    ShellExecuteA(NULL, "open", installCommand.c_str(), installOption.c_str()/, tempPath.c_str(), SW_SHOWNORMAL);
 
     curl_global_cleanup();
 
