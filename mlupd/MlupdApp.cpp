@@ -199,6 +199,38 @@ std::string Mlupd::GetOptionValue(const std::vector<std::string>& args, const st
     return std::string(defValue);
 }
 
+UINT Mlupd::GetOptionValue(const std::vector<std::string>& args, const std::string& key_prefix, UINT defValue)
+{
+    for (const auto& arg : args) {
+        if (arg.rfind(key_prefix, 0) == 0) { // prefix一致
+            std::string s = arg.substr(key_prefix.length());
+            int radix = 10;
+            if (s.rfind("0x", 0) == 0) {
+                radix = 16;
+            }
+            UINT n = strtol(s.c_str(), NULL, radix);
+            return n;
+        }
+    }
+    return defValue;
+}
+
+UINT64 Mlupd::GetOptionUINT64(const std::vector<std::string>& args, const std::string& key_prefix, UINT64 defValue)
+{
+    for (const auto& arg : args) {
+        if (arg.rfind(key_prefix, 0) == 0) { // prefix一致
+            std::string s = arg.substr(key_prefix.length());
+            int radix = 10;
+            if (s.rfind("0x", 0) == 0) {
+                radix = 16;
+            }
+            UINT64 n = strtoll(s.c_str(), NULL, radix);    // 64bit
+            return n;
+        }
+    }
+    return defValue;
+}
+
 std::string Mlupd::GetConfigFilePath()
 {
     char modulePath[MAX_PATH], drive[_MAX_DRIVE], dir[_MAX_DIR], fname[_MAX_FNAME], ext[_MAX_EXT];
@@ -280,6 +312,30 @@ bool Mlupd::CreateFullDirectory(const std::string& fullPath)
     return true;
 }
 
+void Mlupd::CenterWindow(HWND hWnd, HWND hParent)
+{
+    RECT rcWnd, rcParent;
+    int x, y, width, height;
+
+    // ウィンドウサイズ取得
+    GetWindowRect(hWnd, &rcWnd);
+    width = rcWnd.right - rcWnd.left;
+    height = rcWnd.bottom - rcWnd.top;
+
+    if (hParent == NULL) {
+        // 親ウィンドウが指定されていない場合、デスクトップを基準に
+        SystemParametersInfo(SPI_GETWORKAREA, 0, &rcParent, 0);
+    }
+    else {
+        GetWindowRect(hParent, &rcParent);
+    }
+
+    x = rcParent.left + (rcParent.right - rcParent.left - width) / 2;
+    y = rcParent.top + (rcParent.bottom - rcParent.top - height) / 2;
+
+    SetWindowPos(hWnd, NULL, x, y, 0, 0, SWP_NOZORDER | SWP_NOSIZE | SWP_NOACTIVATE);
+}
+
 MLERR Mlupd::Main(int argc, std::vector<std::string> argv)
 {
     MLERR err = MLUPD_OK;
@@ -287,11 +343,14 @@ MLERR Mlupd::Main(int argc, std::vector<std::string> argv)
 
     // 各オプション。
     configfileOption = GetOptionValue(argv, "--configfile=", configfileOption.c_str());
-    bool helpFlag = HasFlag(argv, "--help");
-    bool checkOnlyFlag = HasFlag(argv, "--check-only");
-    bool downloadOnlyFlag = HasFlag(argv, "--download-only");
-    bool showConfigFlag = HasFlag(argv, "--config");
-    bool inquiryUpdate = HasFlag(argv, "--inquiry-update");
+    helpFlag = HasFlag(argv, "--help");
+    checkOnlyFlag = HasFlag(argv, "--check-only");
+    downloadOnlyFlag = HasFlag(argv, "--download-only");
+    showConfigFlag = HasFlag(argv, "--config");
+    inquiryUpdate = HasFlag(argv, "--inquiry-update");
+    forceUpdate = HasFlag(argv, "--force-update");
+    noVersionSkip = HasFlag(argv, "--no-version-skip");
+    parentWndHandle = (HWND)GetOptionUINT64(argv, "--parent-window-handle=", (UINT64)parentWndHandle);
 
     if (helpFlag) {
         // コマンドライン書式表示。
@@ -360,10 +419,12 @@ MLERR Mlupd::Main(int argc, std::vector<std::string> argv)
     std::string value = mlupd::pathmap::HashPath(GetConfigFilePath());
     localVersion = RegGetString(HKEY_CURRENT_USER, key.c_str(), value.c_str(), localVersion.c_str());
 
-    bool forceUpdate = configLocal["force_update"].get<bool>();
+    forceUpdate |= configLocal["force_update"].get<bool>();
     if (!forceUpdate && !VersionIsNewer(svrVersion, localVersion)) {
         std::cout << "バージョンは最新です。\n";
-        return S_OK; // 変化なし
+        if (!noVersionSkip) {
+            return S_OK; // 変化なし
+        }
     }
 
     if (!forceUpdate && inquiryUpdate) {

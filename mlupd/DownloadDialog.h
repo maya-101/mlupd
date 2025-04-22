@@ -45,5 +45,6 @@ protected:
     INT_PTR OnTimer(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
     INT_PTR OnCancel(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
     INT_PTR OnDestroy(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
+    INT_PTR OnClose(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
     static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
 };

@@ -6,6 +6,46 @@
 
 DownloadDialog *DownloadDialog::m_pThis = NULL;
 
+DownloadDialog::DownloadDialog(Mlupd *mlupd)
+    : m_mlupd(mlupd)
+{
+    assert(m_pThis == NULL);  // DownloadDialogを同時に複数使うの禁止。
+    m_pThis = this;
+}
+
+DownloadDialog::~DownloadDialog()
+{
+    m_pThis = NULL;
+}
+
+MLERR DownloadDialog::Init(std::string srcUrl, std::string dstPath)
+{
+    m_param = PARAM();
+    m_param.srcUrl = srcUrl;
+    m_param.dstPath = dstPath;
+    return S_OK;
+}
+
+MLERR DownloadDialog::DoModal()
+{
+    m_hDlg = CreateDialogA(m_mlupd->m_hInst, MAKEINTRESOURCEA(IDD_DOWNLOAD), NULL, DialogProc);
+
+    if (m_mlupd->parentWndHandle) {
+        m_mlupd->CenterWindow(m_hDlg, m_mlupd->parentWndHandle);
+    }
+
+    // メッセージループ（モードレスダイアログ用）
+    MSG msg;
+    while (GetMessage(&msg, NULL, 0, 0)) {
+        if (!IsDialogMessage(m_hDlg, &msg)) {
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+        }
+    }
+
+    return m_param.err;
+}
+
 size_t DownloadDialog::Download_WriteCallback(void* ptr, size_t size, size_t nmemb, void* stream)
 {
     std::ofstream* out = reinterpret_cast<std::ofstream*>(stream);
@@ -20,6 +60,17 @@ int DownloadDialog::Download_ProgressCallback(void* clientp, curl_off_t dltotal,
     // 進捗を更新。
     pThis->m_param.total = dltotal;
     pThis->m_param.current = dlnow;
+
+    if (pThis->m_param.total > 0) {
+        if (!IsWindowVisible(pThis->m_hDlg)) {
+            // 残りが90%以上だったら。
+            if (dltotal >= 1024 * 1024) {
+                if (dlnow * 100 / dltotal < 10) {  // 
+                    ShowWindow(pThis->m_hDlg, SW_SHOW);
+                }
+            }
+        }
+    }
 
     // 中断要求が出ているようなら中断。
     if (pThis->m_param.abortReq) {
@@ -170,6 +221,17 @@ INT_PTR DownloadDialog::OnDestroy(HWND hDlg, UINT message, WPARAM wParam, LPARAM
     // スレッドが終わるまで待つ。
     m_param.thread.join();
     m_hDlg = NULL;
+
+    // メッセージループ終わらせる。
+    PostQuitMessage(0);
+
+    return 0;
+}
+
+INT_PTR DownloadDialog::OnClose(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    DestroyWindow(hDlg);
+
     return 0;
 }
 
@@ -191,6 +253,10 @@ INT_PTR CALLBACK DownloadDialog::DialogProc(HWND hDlg, UINT message, WPARAM wPar
         res = m_pThis->OnTimer(hDlg, message, wParam, lParam);
         break;
 
+    case WM_CLOSE:
+        res = m_pThis->OnClose(hDlg, message, wParam, lParam);
+        break;
+
     case WM_COMMAND:
         switch (LOWORD(wParam))
         {
@@ -206,31 +272,5 @@ INT_PTR CALLBACK DownloadDialog::DialogProc(HWND hDlg, UINT message, WPARAM wPar
         break;
     }
 
-    return res;
-}
-
-DownloadDialog::DownloadDialog(Mlupd *mlupd)
-    : m_mlupd(mlupd)
-{
-    assert(m_pThis == NULL);  // DownloadDialogを同時に複数使うの禁止。
-    m_pThis = this;
-}
-
-DownloadDialog::~DownloadDialog()
-{
-    m_pThis = NULL;
-}
-
-MLERR DownloadDialog::Init(std::string srcUrl, std::string dstPath)
-{
-    m_param = PARAM();
-    m_param.srcUrl = srcUrl;
-    m_param.dstPath = dstPath;
-    return S_OK;
-}
-
-MLERR DownloadDialog::DoModal()
-{
-    DialogBox(m_mlupd->m_hInst, MAKEINTRESOURCE(IDD_DOWNLOAD), NULL, DialogProc);
-    return m_param.err;
+    return DefWindowProc(hDlg, message, wParam, lParam);
 }

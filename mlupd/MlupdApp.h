@@ -50,6 +50,10 @@ public:
     bool checkOnlyFlag          = false;
     bool downloadOnlyFlag       = false;
     bool showConfigFlag         = false;
+    bool inquiryUpdate          = true;
+    bool forceUpdate            = false;
+    HWND parentWndHandle        = NULL;
+    bool noVersionSkip          = false;
 
     std::string target_filename     = "MyAppInstaller.exe";
     std::string target_url          = "https://example.com/download/";
@@ -88,6 +92,11 @@ public:
     bool HasFlag(const std::vector<std::string>& args, const std::string& flag);
     // コマンドラインのパラメータ付きオプションを取得する。
     std::string GetOptionValue(const std::vector<std::string>& args, const std::string& key_prefix, PCSTR defValue);
+    UINT GetOptionValue(const std::vector<std::string>& args, const std::string& key_prefix, UINT defValue);
+    UINT64 GetOptionUINT64(const std::vector<std::string>& args, const std::string& key_prefix, UINT64 defValue);
+    // hParentの中央にhWndを持ってくる。
+    void CenterWindow(HWND hWnd, HWND hParent = NULL);
+
     // confileファイルのパス(ローカル)を取得。
     std::string GetConfigFilePath();
     // レジストリ。

@@ -7,6 +7,10 @@ GenericDialog *GenericDialog::m_pThis = NULL;
 
 INT_PTR GenericDialog::OnInitDialog(HWND hDlg)
 {
+    if (m_mlupd->parentWndHandle) {
+        m_mlupd->CenterWindow(hDlg, m_mlupd->parentWndHandle);
+    }
+
     return TRUE;
 }
 

@@ -47,7 +47,7 @@ https://github.com/nlohmann/json/blob/develop/LICENSE.MIT
   4. アプリケーション配布のイメージに含まれている mlupd.config.json を更新する。
 
 【コマンドライン仕様】
-mlupd.exe [--configfile=コンフィグファイル名] [--check-only] [--download-only] [--config] [--help]
+mlupd.exe [各種オプション 下を参照]
 --configfile= コンフィグファイル名を指定する。省略時は、mlupd.config.jsonという名前のファイルを検索する。コンフィグファイルはmlupd.exeと同じディレクトリに置くこと。
 --pwd= サーバーパスワードを指定する。
 --check-only サーバーにアクセスして、新しいバージョンのアップデータがあるかチェックする。ダウンロードはしない
@@ -55,6 +55,9 @@ mlupd.exe [--configfile=コンフィグファイル名] [--check-only] [--downlo
 --download-only サーバーからアップデート対象のファイルをダウンロードする。インストールは実行しない。
 --config 設定ダイアログを表示する。各種設定を行う。コンフィグファイルが出力されるので、これをサーバーのアップデータと同じ場所にコピーしておく。
 --help コマンドラインの書式を表示する。
+--force-update ユーザーに問い合わせずに強制的に更新する。コンフィグファイルのforce-updateと同じです。
+--parent-window-handle=xxx 呼び出し側のウィンドウハンドルを指定する(指定した場合は、そのウィンドウの中央に進捗などを表示します)
+--no-version-skip バージョンスキップを一旦無効にします。
 
 【戻り値】
 0 配布アプリケーションは最新である。または正常にダウンロードできた。
