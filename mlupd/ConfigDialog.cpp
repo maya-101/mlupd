@@ -27,11 +27,16 @@ MLERR ConfigDialog::Init()
 int ConfigDialog::DoModal()
 {
     DialogBox(m_mlupd->m_hInst, MAKEINTRESOURCE(IDD_CONFIG), NULL, DialogProc);
+
     return m_ret;
 }
 
 INT_PTR ConfigDialog::OnInitDialog(HWND hDlg)
 {
+    if (m_mlupd->parentWndHandle) {
+        m_mlupd->CenterWindow(hDlg, m_mlupd->parentWndHandle);
+    }
+
     CONFIG_ITEM_INFO items[] = {
         { controlEdit,  IDC_TARGET_FILENAME_EDIT,   { &m_mlupd->target_filename, NULL },     "target_filename",      },
         { controlEdit,  IDC_TARGET_URL_EDIT,        { &m_mlupd->target_url, NULL },          "target_url",           },

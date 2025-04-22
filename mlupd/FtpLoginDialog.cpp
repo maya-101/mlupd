@@ -8,6 +8,10 @@ FtpLoginDialog *FtpLoginDialog::m_pThis = NULL;
 
 INT_PTR CALLBACK FtpLoginDialog::OnInitDialog(HWND hDlg)
 {
+    if (m_mlupd->parentWndHandle) {
+        m_mlupd->CenterWindow(hDlg, m_mlupd->parentWndHandle);
+    }
+
     LOGIN_ITEM items[] =
     {
         { controlEdit, IDC_FTP_URL_EDIT,         &m_mlupd->ftpUrl,  },
