@@ -291,10 +291,11 @@ MLERR Mlupd::Main(int argc, std::vector<std::string> argv)
     bool checkOnlyFlag = HasFlag(argv, "--check-only");
     bool downloadOnlyFlag = HasFlag(argv, "--download-only");
     bool showConfigFlag = HasFlag(argv, "--config");
+    bool inquiryUpdate = HasFlag(argv, "--inquiry-update");
 
     if (helpFlag) {
         // コマンドライン書式表示。
-        std::cout << "Usage: updater.exe [--configfile=mlupd.config.json] [--check-only] [--download-only]\n";
+        std::cout << "Usage: updater.exe [--configfile=mlupd.config.json] [--check-only] [--inquiry-update] [--download-only]\n";
         return MLUPD_OK;
     }
 
@@ -365,12 +366,7 @@ MLERR Mlupd::Main(int argc, std::vector<std::string> argv)
         return S_OK; // 変化なし
     }
 
-    std::cout << "新しいバージョン " << svrVersion << " を検出しました。\n";
-    if (checkOnlyFlag) {
-        return MLUPD_NEW_VERSION_FOUND_ON_SERVER; // 新バージョンあり
-    }
-
-    if (!forceUpdate) {
+    if (!forceUpdate && inquiryUpdate) {
         GenericDialog dlg(this);
         int res = dlg.DoModal(m_hInst, IDD_SKIP_UPDATE);
         if (res == IDIGNORE) {  // 次のバージョンまでスキップ。
@@ -383,6 +379,11 @@ MLERR Mlupd::Main(int argc, std::vector<std::string> argv)
         else if (res == IDCANCEL) {
             return S_OK;
         }
+    }
+
+    std::cout << "新しいバージョン " << svrVersion << " を検出しました。\n";
+    if (checkOnlyFlag) {
+        return MLUPD_NEW_VERSION_FOUND_ON_SERVER; // 新バージョンあり
     }
 
     // ダウンロード開始。
