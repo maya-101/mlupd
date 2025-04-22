@@ -11,6 +11,8 @@
 #define IDD_FTP_LOGIN                   130
 #define IDD_DOWNLOAD                    131
 #define IDD_SKIP_UPDATE                 132
+#define IDD_NO_UPDATE                   133
+#define IDD_NO_UPDATE1                  134
 #define IDC_TARGET_FILENAME_EDIT        1000
 #define IDC_TARGET_URL_EDIT             1001
 #define IDC_TARGET_VERSION_EDIT         1002

@@ -53,7 +53,7 @@ public:
     bool inquiryUpdate          = true;
     bool forceUpdate            = false;
     HWND parentWndHandle        = NULL;
-    bool noVersionSkip          = false;
+    bool interactiveMode        = false;
 
     std::string target_filename     = "MyAppInstaller.exe";
     std::string target_url          = "https://example.com/download/";

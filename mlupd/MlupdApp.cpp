@@ -349,7 +349,7 @@ MLERR Mlupd::Main(int argc, std::vector<std::string> argv)
     showConfigFlag = HasFlag(argv, "--config");
     inquiryUpdate = HasFlag(argv, "--inquiry-update");
     forceUpdate = HasFlag(argv, "--force-update");
-    noVersionSkip = HasFlag(argv, "--no-version-skip");
+    interactiveMode = HasFlag(argv, "--interactive-mode");
     parentWndHandle = (HWND)GetOptionUINT64(argv, "--parent-window-handle=", (UINT64)parentWndHandle);
 
     if (helpFlag) {
@@ -415,7 +415,7 @@ MLERR Mlupd::Main(int argc, std::vector<std::string> argv)
     std::string localVersion = configLocal["target_version"].get<std::string>();
 
     // 前回スキップしたバージョン(あれば)を取得。
-    if (!noVersionSkip) {
+    if (!interactiveMode) {
         std::string key = REGKEY_SKIP_VERSIONS;
         std::string value = mlupd::pathmap::HashPath(GetConfigFilePath());
         localVersion = RegGetString(HKEY_CURRENT_USER, key.c_str(), value.c_str(), localVersion.c_str());
@@ -424,10 +424,14 @@ MLERR Mlupd::Main(int argc, std::vector<std::string> argv)
     forceUpdate |= configLocal["force_update"].get<bool>();
     if (!forceUpdate && !VersionIsNewer(svrVersion, localVersion)) {
         std::cout << "バージョンは最新です。\n";
+        if (interactiveMode) {
+            GenericDialog dlg(this);
+            int res = dlg.DoModal(m_hInst, IDD_NO_UPDATE);
+        }
         return S_OK; // 変化なし
     }
 
-    if (!forceUpdate && inquiryUpdate) {
+    if (!forceUpdate && inquiryUpdate || interactiveMode) {
         GenericDialog dlg(this);
         int res = dlg.DoModal(m_hInst, IDD_SKIP_UPDATE);
         if (res == IDIGNORE) {  // 次のバージョンまでスキップ。
