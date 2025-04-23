@@ -18,11 +18,13 @@ DownloadDialog::~DownloadDialog()
     m_pThis = NULL;
 }
 
-MLERR DownloadDialog::Init(std::string srcUrl, std::string dstPath)
+MLERR DownloadDialog::Init(std::string srcUrl, std::string dstPath, std::string username, std::string password)
 {
     m_param = PARAM();
     m_param.srcUrl = srcUrl;
     m_param.dstPath = dstPath;
+    m_param.username = username;
+    m_param.password = password;
     return S_OK;
 }
 
@@ -61,12 +63,14 @@ int DownloadDialog::Download_ProgressCallback(void* clientp, curl_off_t dltotal,
     pThis->m_param.total = dltotal;
     pThis->m_param.current = dlnow;
 
-    if (pThis->m_param.total > 0) {
-        if (!IsWindowVisible(pThis->m_hDlg)) {
-            // 残りが90%以上だったら。
-            if (dltotal >= 1024 * 1024) {
-                if (dlnow * 100 / dltotal < 10) {  // 
-                    ShowWindow(pThis->m_hDlg, SW_SHOW);
+    if (pThis->m_mlupd->showProgressFlag) {
+        if (pThis->m_param.total > 0) {
+            if (!IsWindowVisible(pThis->m_hDlg)) {
+                // 残りが90%以上だったら。
+                if (dltotal >= 1024 * 1024) {
+                    if (dlnow * 100 / dltotal < 10) {  // 
+                        ShowWindow(pThis->m_hDlg, SW_SHOW);
+                    }
                 }
             }
         }
@@ -99,6 +103,10 @@ MLERR DownloadDialog::Download()
     do {
         curlErr = curl_easy_setopt(m_param.curl, CURLOPT_URL, m_param.srcUrl.c_str());
         BREAK_CURLERR(curlErr);
+        if (!m_param.username.empty() || !m_param.password.empty()) {
+            curlErr = curl_easy_setopt(m_param.curl, CURLOPT_USERPWD, (m_param.username + ":" + m_param.password).c_str());
+            BREAK_CURLERR(curlErr);
+        }
         curlErr = curl_easy_setopt(m_param.curl, CURLOPT_WRITEFUNCTION, Download_WriteCallback);
         BREAK_CURLERR(curlErr);
         curlErr = curl_easy_setopt(m_param.curl, CURLOPT_WRITEDATA, &m_param.outFile);
@@ -174,6 +182,10 @@ INT_PTR DownloadDialog::OnInitDialog(HWND hDlg, UINT message, WPARAM wParam, LPA
     MLERR err = S_OK;
 
     m_hDlg = hDlg;
+
+    if (!m_mlupd->showProgressFlag) {
+        ShowWindow(m_hDlg, SW_HIDE);
+    }
 
     // UI更新用のタイマー開始。
     SetTimer(m_hDlg, TID_UPDATE, 300, NULL);

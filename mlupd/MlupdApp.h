@@ -46,14 +46,19 @@ public:
     HINSTANCE m_hInst;
 
     std::string configfileOption  = std::string("mlupd.config.json");
+    std::string password;
+    std::string username;
     bool helpFlag               = false;
     bool checkOnlyFlag          = false;
     bool downloadOnlyFlag       = false;
+    bool noVersionSkipFlag      = false;
     bool showConfigFlag         = false;
-    bool inquiryUpdate          = true;
+    bool showProgressFlag       = false;
     bool forceUpdate            = false;
     HWND parentWndHandle        = NULL;
-    bool interactiveMode        = false;
+    bool skipCurrentVer         = false;
+    bool cancelVerSkip          = false;
+    
 
     std::string target_filename     = "MyAppInstaller.exe";
     std::string target_url          = "https://example.com/download/";

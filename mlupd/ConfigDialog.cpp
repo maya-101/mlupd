@@ -44,8 +44,6 @@ INT_PTR ConfigDialog::OnInitDialog(HWND hDlg)
         { controlEdit,  IDC_INSTALL_COMMAND_EDIT,   { &m_mlupd->install_command, NULL },     "install_command",      },
         { controlEdit,  IDC_INSTALL_OPTION_EDIT,    { &m_mlupd->install_option, NULL },      "install_option",       },
         { controlCheck, IDC_FORCE_UPDATE_CHECK,     { NULL, &m_mlupd->force_update, },       "force_update",         },
-        { controlEdit,  IDC_SKIP_VERSION_FILE_EDIT, { &m_mlupd->skip_version, NULL },        "skip_version",         },
-        { controlEdit,  IDC_EXPECTED_SHA256_EDIT,   { &m_mlupd->expected_shr256, NULL },     "expected_shr256",      },
         { controlCheck, IDC_UPLOAD_RESPONSE_CHECK,  { NULL, &m_mlupd->uploadConfig, },       NULL,                   },
     };
     for (int n = 0; n < numof(items); n++) {

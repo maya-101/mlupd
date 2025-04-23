@@ -10,17 +10,12 @@
 #define IDD_CONFIG                      129
 #define IDD_FTP_LOGIN                   130
 #define IDD_DOWNLOAD                    131
-#define IDD_SKIP_UPDATE                 132
-#define IDD_NO_UPDATE                   133
-#define IDD_NO_UPDATE1                  134
 #define IDC_TARGET_FILENAME_EDIT        1000
 #define IDC_TARGET_URL_EDIT             1001
 #define IDC_TARGET_VERSION_EDIT         1002
 #define IDC_INSTALL_COMMAND_EDIT        1004
 #define IDC_FORCE_UPDATE_CHECK          1005
-#define IDC_SKIP_VERSION_FILE_EDIT      1006
 #define IDC_INSTALL_COMMAND_STATIC      1007
-#define IDC_EXPECTED_SHA256_EDIT        1008
 #define IDC_FTP_URL_EDIT                1008
 #define IDC_INSTALL_OPTION_EDIT         1009
 #define IDC_FTP_USERNAME_EDIT           1009

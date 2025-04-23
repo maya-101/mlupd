@@ -271,6 +271,11 @@ bool Mlupd::RegSetString(HKEY hRoot, PCSTR subKey, PCSTR valueName, PCSTR value)
     if (RegCreateKeyExA(hRoot, subKey, 0, nullptr, 0, KEY_WRITE, nullptr, &hKey, nullptr) != ERROR_SUCCESS)
         return false;
 
+    if (!value) {
+        RegDeleteValueA(hKey, valueName);
+        return true;
+    }
+
     LONG result = RegSetValueExA(hKey, valueName, 0, REG_SZ, reinterpret_cast<const BYTE*>(value), (DWORD)(strlen(value) + 1));
     RegCloseKey(hKey);
     return (result == ERROR_SUCCESS);
@@ -343,18 +348,34 @@ MLERR Mlupd::Main(int argc, std::vector<std::string> argv)
 
     // 各オプション。
     configfileOption = GetOptionValue(argv, "--configfile=", configfileOption.c_str());
+    password = GetOptionValue(argv, "--password=", password.c_str());
+    username = GetOptionValue(argv, "--username=", username.c_str());
     helpFlag = HasFlag(argv, "--help");
     checkOnlyFlag = HasFlag(argv, "--check-only");
     downloadOnlyFlag = HasFlag(argv, "--download-only");
+    noVersionSkipFlag = HasFlag(argv, "--no-version-skip");
     showConfigFlag = HasFlag(argv, "--config");
-    inquiryUpdate = HasFlag(argv, "--inquiry-update");
+    showProgressFlag = HasFlag(argv, "--progress");
     forceUpdate = HasFlag(argv, "--force-update");
-    interactiveMode = HasFlag(argv, "--interactive-mode");
     parentWndHandle = (HWND)GetOptionUINT64(argv, "--parent-window-handle=", (UINT64)parentWndHandle);
+    skipCurrentVer = HasFlag(argv, "--skip-current-version");
+    cancelVerSkip = HasFlag(argv, "--cancel-version-skip");
 
     if (helpFlag) {
         // コマンドライン書式表示。
-        std::cout << "Usage: updater.exe [--configfile=mlupd.config.json] [--check-only] [--inquiry-update] [--download-only]\n";
+        std::cout << "Usage: updater.exe \n";
+        std::cout << "--configfile= コンフィグファイル名を指定する。省略時は、mlupd.config.jsonという名前のファイルを検索する。コンフィグファイルはmlupd.exeと同じディレクトリに置くこと。 \n";
+        std::cout << "--username= サーバーアクセスのユーザー名。 \n";
+        std::cout << "--password= サーバーアクセスのパスワード。 \n";
+        std::cout << "--check-only サーバーに新しいバージョンのアップデータがあるかチェックする。ダウンロードはしない \n";
+        std::cout << "--download-only サーバーに新しいバージョンのアップデータが有った場合ダウンロードする。インストールは実行しない。 \n";
+        std::cout << "--config 設定ダイアログを表示する。各種設定を行う。mlupd.exeと同じ場所にコンフィグファイルが出力されるので、これをサーバーのアップデータと同じ場所にコピーしておく。 \n";
+        std::cout << "--help コマンドラインの書式を表示する。 \n";
+        std::cout << "--force-update ユーザーに問い合わせずに強制的に更新する。コンフィグファイルのforce-updateと同じです。 \n";
+        std::cout << "--parent-window-handle=xxx 呼び出し側のウィンドウハンドルを指定する(指定した場合は、そのウィンドウの中央に進捗などを表示します) \n";
+        std::cout << "--skip-current-version 現在サーバーに上がっているバージョンをスキップします。 \n";
+        std::cout << "--no-version-skip この呼び出し時だけ、バーションスキップを一時的に無効化します。 \n";
+        std::cout << "--cancel-version-skip バージョンスキップを無効化します。 \n";
         return MLUPD_OK;
     }
 
@@ -396,7 +417,7 @@ MLERR Mlupd::Main(int argc, std::vector<std::string> argv)
     }
 
     DownloadDialog dlDlg(this);
-    dlDlg.Init(serverPath + configfileOption, localPath);
+    dlDlg.Init(serverPath + configfileOption, localPath, username, password);
     err = dlDlg.DoModal();
     if (err != MLUPD_OK) {
         std::cerr << "ダウンロードできなかった。\n";
@@ -410,45 +431,56 @@ MLERR Mlupd::Main(int argc, std::vector<std::string> argv)
         return MLUPD_ERR + ERR_COULD_NOT_OPEN_CONFIG_FILE;
     }
 
-    // サーバー側のバージョンと、アプリ側のバージョンを比較。
     std::string svrVersion = configSvr["target_version"].get<std::string>();
     std::string localVersion = configLocal["target_version"].get<std::string>();
+    forceUpdate |= configLocal["force_update"].get<bool>();
 
-    // 前回スキップしたバージョン(あれば)を取得。
-    if (!interactiveMode) {
+    if (cancelVerSkip) {
+        // バージョンスキップの取り消し。
+        std::string key = REGKEY_SKIP_VERSIONS;
+        std::string value = mlupd::pathmap::HashPath(GetConfigFilePath());
+        RegSetString(HKEY_CURRENT_USER, key.c_str(), value.c_str(), NULL);
+    }
+    else if (!noVersionSkipFlag) {
+        // スキップ中のバージョンを取得。
         std::string key = REGKEY_SKIP_VERSIONS;
         std::string value = mlupd::pathmap::HashPath(GetConfigFilePath());
         localVersion = RegGetString(HKEY_CURRENT_USER, key.c_str(), value.c_str(), localVersion.c_str());
     }
 
-    forceUpdate |= configLocal["force_update"].get<bool>();
-    if (!forceUpdate && !VersionIsNewer(svrVersion, localVersion)) {
-        std::cout << "バージョンは最新です。\n";
-        if (interactiveMode) {
-            GenericDialog dlg(this);
-            int res = dlg.DoModal(m_hInst, IDD_NO_UPDATE);
-        }
-        return S_OK; // 変化なし
+    bool newVerFound = FALSE;
+    if (forceUpdate) {
+        newVerFound = true;
+    }
+    else {
+        // サーバー側のバージョンと、アプリ側のバージョンを比較。
+        newVerFound = VersionIsNewer(svrVersion, localVersion);
     }
 
-    if (!forceUpdate && inquiryUpdate || interactiveMode) {
-        GenericDialog dlg(this);
-        int res = dlg.DoModal(m_hInst, IDD_SKIP_UPDATE);
-        if (res == IDIGNORE) {  // 次のバージョンまでスキップ。
-            // スキップしたバージョンをレジストリに書いておく。
+    if (newVerFound) {
+        std::cout << "新しいバージョン " << svrVersion << " を検出しました。\n";
+
+        // 新しいバージョンが見つかった。
+        if (skipCurrentVer) {
+            // このバージョンはスキップする。
             std::string key = REGKEY_SKIP_VERSIONS;
             std::string value = mlupd::pathmap::HashPath(GetConfigFilePath());
             RegSetString(HKEY_CURRENT_USER, key.c_str(), value.c_str(), svrVersion.c_str());
             return S_OK;
         }
-        else if (res == IDCANCEL) {
-            return S_OK;
-        }
+    }
+    else {
+        std::cout << "バージョンは最新です。\n";
+        return S_OK;
     }
 
-    std::cout << "新しいバージョン " << svrVersion << " を検出しました。\n";
     if (checkOnlyFlag) {
-        return MLUPD_NEW_VERSION_FOUND_ON_SERVER; // 新バージョンあり
+        if (newVerFound) {
+            return MLUPD_NEW_VERSION_FOUND_ON_SERVER;
+        }
+        else {
+            return S_OK;
+        }
     }
 
     // ダウンロード開始。
@@ -459,7 +491,7 @@ MLERR Mlupd::Main(int argc, std::vector<std::string> argv)
         //return MLUPD_ERR + ERR_COULD_NOT_OUTPUT_FILE;
     }
 
-    dlDlg.Init(targetUrl + targetFilename, tempPath + targetFilename);
+    dlDlg.Init(targetUrl + targetFilename, tempPath + targetFilename, username, password);
     err = dlDlg.DoModal();
     if (err != MLUPD_OK) {
         std::cerr << "ダウンロードできなかった。\n";
